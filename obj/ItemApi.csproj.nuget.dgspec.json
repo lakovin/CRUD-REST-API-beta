@@ -50,9 +50,9 @@
               "target": "Package",
               "version": "[6.0.22, )"
             },
-            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+            "MongoDB.Driver": {
               "target": "Package",
-              "version": "[6.0.22, )"
+              "version": "[2.29.0, )"
             },
             "Swashbuckle.AspNetCore": {
               "target": "Package",

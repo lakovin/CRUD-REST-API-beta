@@ -1,35 +1,33 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using ItemApi.Data;
 using ItemApi.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ItemApi.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class ItemsController : ControllerBase
     {
-        private readonly DataContext _context;
+        private readonly ItemService _itemService;
 
-        public ItemsController(DataContext context)
+        public ItemsController(ItemService itemService)
         {
-            _context = context;
+            _itemService = itemService;
         }
 
         // GET: api/items
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Item>>> GetItems()
         {
-            return await _context.Items.ToListAsync();
+            return await _itemService.GetAsync();
         }
 
         // GET: api/items/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Item>> GetItem(int id)
+        public async Task<ActionResult<Item>> GetItem(string id)
         {
-            var item = await _context.Items.FindAsync(id);
+            var item = await _itemService.GetAsync(id);
 
             if (item == null)
             {
@@ -43,59 +41,35 @@ namespace ItemApi.Controllers
         [HttpPost]
         public async Task<ActionResult<Item>> PostItem(Item item)
         {
-            _context.Items.Add(item);
-            await _context.SaveChangesAsync();
-
+            await _itemService.CreateAsync(item);
             return CreatedAtAction(nameof(GetItem), new { id = item.Id }, item);
         }
 
         // PUT: api/items/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutItem(int id, Item item)
+        public async Task<IActionResult> PutItem(string id, Item item)
         {
-            if (id != item.Id)
+            if (id != item.Id) 
             {
                 return BadRequest();
             }
 
-            _context.Entry(item).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ItemExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
+            await _itemService.UpdateAsync(id, item); 
             return NoContent();
         }
+
         // DELETE: api/items/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteItem(int id)
+        public async Task<IActionResult> DeleteItem(string id)
         {
-            var item = await _context.Items.FindAsync(id);
+            var item = await _itemService.GetAsync(id);
             if (item == null)
             {
                 return NotFound();
             }
 
-            _context.Items.Remove(item);
-            await _context.SaveChangesAsync();
-
+            await _itemService.RemoveAsync(id);
             return NoContent();
-        }
-        private bool ItemExists(int id)
-        {
-            return _context.Items.Any(e => e.Id == id);
         }
     }
 }
